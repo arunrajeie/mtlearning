@@ -155,7 +155,14 @@ void MLearning::readfile3(ifstream &ifs) {
     while (ss >> val) 
       simVecY.push_back(val);
   }
-  cerr << "simmaty size : " << simMatY_.size() << endl;
+#ifdef ERRORCHECK
+  if (simMatY_.size() != simMatY_[0].size()) {
+    cerr << "error 5 : " << simMatY_.size() << " " << simMatY_[0].size() << endl;
+    exit(1);
+  }
+#endif
+  
+  cerr << "simmaty size : " << simMatY_.size() << " " << simMatY_[0].size() << endl;
 }
 
 void MLearning::readfile4(ifstream &ifs) {
@@ -277,7 +284,6 @@ double MLearning::compObjectiveFun(vector<vector<double> > &weightMat) {
   for (size_t i = 0; i < objs.size(); ++i)
     obj += objs[i]; 
   
-  cerr << "compObjectiveFun : " << obj << endl;
   return obj/double(numDat_* numTask_);
 }
 
@@ -285,6 +291,7 @@ double MLearning::compTrace1(vector<vector<double> > &weightMat, vector<vector<d
   vector<vector<double> > tmpMat(dim_);
   for (size_t i = 0; i < dim_; ++i) 
     tmpMat[i].resize(numTask_);
+
   #ifdef _PARALLEL_
     #pragma omp parallel for schedule(static)
   #endif
@@ -314,7 +321,7 @@ double MLearning::compTrace1(vector<vector<double> > &weightMat, vector<vector<d
   for (size_t i = 0; i < numTask_; ++i)
     trace1 += tmpMat2[i][i];
   trace1 *= 0.5;
-
+  
   cerr << "trace1 : " << trace1 << endl;
   
   return trace1;
@@ -611,8 +618,8 @@ void MLearning::train(double lambda1, double lambda2, uint64_t num_threads) {
   
   convertSimToLaplacian(simMatY_, lapMatY); // numTask_*
 
-  vector<vector<double> > lapMatX;
-  convertSimToLaplacian(simMatX_, lapMatX);
+  //  vector<vector<double> > lapMatX;
+  //  convertSimToLaplacian(simMatX_, lapMatX);
 
   weightMat_.resize(numTask_);
   for (size_t i = 0; i < numTask_; ++i) 
